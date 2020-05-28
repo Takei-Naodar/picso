@@ -1,42 +1,35 @@
 #!/bin/bash
 declare -i dryrun=0	
-declare -a sernam											#service names for rrinfo file
+declare -a sernam					#service names for rrinfo file
 sernam[0]="sprunge.us"
 sernam[1]="paste.c-net.org"
 sernam[2]="ix.io"
 sernam[3]="0x0.st"
 sernam[4]="hastebin.com"
 function service0 {	
-																#functions to call with the respective commands necessary	
-cat ~/.config/picso/upload_file | curl -F 'sprunge=<-' http://sprunge.us
+									#functions to call with the respective commands necessary	
+cat /tmp/upload_file | curl -F 'sprunge=<-' http://sprunge.us
 return
 
 }
 function service1 {
 
-cat ~/.config/picso/upload_file | curl --upload-file - 'https://paste.c-net.org/'
+cat /tmp/upload_file | curl --upload-file - 'https://paste.c-net.org/'
 return
 }
 function service2 {
 
-cat ~/.config/picso/upload_file | curl -F 'f:1=<-' ix.io
+cat /tmp/upload_file | curl -F 'f:1=<-' ix.io
 return
 
 }
 function service3 {
-
-oldpath=$(pwd -P)
-cd ~/.config/picso
-curl -F'file=@upload_file' https://0x0.st
-cd $oldpath
+curl -F'file=@/tmp/upload_file' https://0x0.st
 return
 }
 function service4 {
-oldpath=$(pwd -P)
-cd ~/.config/picso
-key=$(curl -F'POST=@upload_file' https://hastebin.com/documents | cut -d'"' -f4)
-cd $oldpath
-printf "https://hastebin.com/$key\n"
+key=$(curl -XPOST -#fT '/tmp/upload_file' https://hastebin.com/documents | cut -d'"' -f4)
+printf "https://hastebin.com/$key"
 return
 }
 
@@ -45,13 +38,13 @@ printf "This is the publish info for community support online script.\nIt's inte
 printf "		\-h		display this help screen\n		\-d		perform a run without uploading files\nV1.0\n"
 }
 if [ ! -d ~/.config/picso ] ; then								
-	mkdir ~/.config/picso										#check if round robin folder and file exist, if not create  them.
+	mkdir ~/.config/picso				#check if round robin folder and file exist, if not create  them.
 fi
 if [ ! -f ~/.config/picso/rrinfo ] ; then
 	touch ~/.config/picso/rrinfo
 fi
 sernum=0
-while [ $sernum -lt ${#sernam[@]} ] ; do								#check if rrinfo is populated with all services, else populate it
+while [ $sernum -lt ${#sernam[@]} ] ; do			#check if rrinfo is populated with all services, else populate it
 	if [ "$(cat ~/.config/picso/rrinfo | grep -c "${sernam[$sernum]}" )" != "1" ] ; then
 		if [ "$(cat ~/.config/picso/rrinfo | grep -c ";" )" -lt 1 ] ; then
 			echo "${sernam[$sernum]};0" >> ~/.config/picso/rrinfo
@@ -65,7 +58,7 @@ done
 
 
 param=1
-while [ $# -ge $param ] ; do														#manage parameters
+while [ $# -ge $param ] ; do				#manage parameters
 	case $1 in
 		-h ) 								#show help
 		help_function
@@ -84,11 +77,11 @@ done
 
 
 
-cat /proc/self/fd/0  > ~/.config/picso/upload_file									#funnel pipe into file
-if [ ! $(file ~/.config/picso/upload_file | grep -c -i text) -ge 1 ] ; then			#so we can test for text
+cat /proc/self/fd/0  > /tmp/upload_file									#funnel pipe into file
+if [ ! $(file /tmp/upload_file | grep -c -i text) -ge 1 ] ; then			#so we can test for text
 	printf "Piped in information does not appear to be text.\n"
-	Printf "$(file ~/.config/picso/upload_file | grep -c -i text)"
-	rm ~/.config/picso/upload_file													#if no text error, cleanup then exit
+	Printf "$(file /tmp/upload_file | grep -c -i text)"
+	rm /tmp/upload_file													#if no text error, cleanup then exit
 	exit 1
 fi
 
@@ -112,17 +105,17 @@ done
 
 
 
-if [ -z $decnum ] ; then										#check if decision error occured
+if [ -z $decnum ] ; then				#check if decision error occured
 	printf " Error occured. No decision in service to post to could be made.\n"
 	cat ~/.config/picso/rrinfo
 	printf "max = $max\n"
-	rm ~/.config/picso/upload_file
+	rm /tmp/upload_file
 	exit 1
-elif [ $dryrun -lt 1 ] ; then								#else upload the file via function then update the rrinfo file
+elif [ $dryrun -lt 1 ] ; then			#else upload the file via function then update the rrinfo file
 	service$decnum
 	let "newuse=$seruse + 1"
 	sed -i "s/${sernam[$decnum]}\;$seruse/${sernam[$decnum]}\;$newuse/g" ~/.config/picso/rrinfo
 fi
 
-rm ~/.config/picso/upload_file									#cleanup the created file
+rm /tmp/upload_file						#cleanup the created file
 exit 0								
