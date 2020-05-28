@@ -122,7 +122,6 @@ elif [ $dryrun -lt 1 ] ; then								#else upload the file via function then upd
 	let "newuse=$seruse + 1"
 	sed -i "s/${sernam[$decnum]}\;$seruse/${sernam[$decnum]}\;$newuse/g" ~/.config/picso/rrinfo
 fi
-exit 0
 
 rm ~/.config/picso/upload_file									#cleanup the created file
 exit 0								
