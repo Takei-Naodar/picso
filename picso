@@ -32,7 +32,7 @@ cd $oldpath
 return
 }
 function service4 {
-oldpath=$(pwd -P){"key":"fututomequ"}
+oldpath=$(pwd -P)
 cd ~/.config/picso
 key=$(curl -F'POST=@upload_file' https://hastebin.com/documents | cut -d'"' -f4)
 cd $oldpath
