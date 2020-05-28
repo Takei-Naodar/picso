@@ -1,0 +1,106 @@
+#!/bin/bash
+declare -i dryrun=0	
+declare -a sernam											#service names for rrinfo file
+sernam[0]="sprunge.us"
+sernam[1]="paste.c-net.org"
+sernam[2]="ix.io"
+
+function service0 {	
+																#functions to call with the respective commands necessary	
+cat ~/.config/picso/upload_file | curl -F 'sprunge=<-' http://sprunge.us
+return
+
+}
+function service1 {
+
+cat ~/.config/picso/upload_file | curl --upload-file - 'https://paste.c-net.org/'
+return
+
+}
+function service2 {
+
+cat ~/.config/picso/upload_file | curl -F 'f:1=<-' ix.io
+return
+
+}
+function help_function {
+printf "This is the publish info for community support online script.\nIt's intended use is to ease the use of different online pastebins\nfor usage to get support from the communities.\n"
+printf "		\-h		display this help screen\n		\-d		perform a run without uploading files\nV1.0\n"
+}
+if [ ! -d ~/.config/picso ] ; then								
+	mkdir ~/.config/picso										#check if round robin folder and file exist, if not create  them.
+fi
+if [ ! -f ~/.config/picso/rrinfo ] ; then
+	touch ~/.config/picso/rrinfo
+fi
+sernum=0
+while [ $sernum -lt ${#sernam[@]} ] ; do								#check if rrinfo is populated with all services, else populate it
+	if [ "$(cat ~/.config/picso/rrinfo | grep -c "${sernam[$sernum]}" )" != "1" ] ; then
+		echo "${sernam[$sernum]};0" >> ~/.config/picso/rrinfo			#todo: if new service is included set it to lowest current used service as to not flood
+	fi
+	let "sernum+=1"
+done
+
+
+param=1
+while [ $# -ge $param ] ; do														#manage parameters
+	case $1 in
+		-h ) 								#show help
+		help_function
+		exit 0
+		;;
+		-d )								# stop it from uploading, mainly for testing
+		dryrun=1
+		;;
+		* ) 
+		printf "$1 is an invalid argument. For help use -h\n"
+		exit 1
+		;;
+	esac
+	shift
+done
+
+
+
+cat /proc/self/fd/0  > ~/.config/picso/upload_file									#funnel pipe into file
+if [ ! $(file ~/.config/picso/upload_file | grep -c -i text) -ge 1 ] ; then			#so we can test for text
+	printf "Piped in information does not appear to be text.\n"
+	Printf "$(file ~/.config/picso/upload_file | grep -c -i text)"
+	rm ~/.config/picso/upload_file													#if no text error, cleanup then exit
+	exit 1
+fi
+
+
+
+decmade=0
+while [ $decmade -eq 0 ] ; do									#decide which service to use via rr style
+	decnum=
+	sernum=0
+	max=1000000
+	while [ $sernum -lt ${#sernam[@]} ] ; do
+		seruse=$(cat ~/.config/picso/rrinfo | grep "${sernam[$sernum]}" | cut -d";" -f2 )
+		if [ $seruse -lt $max ] ; then
+			max=$seruse
+			decnum=$sernum
+		fi
+		let "sernum+=1"
+	done
+	decmade=1
+done				
+
+
+
+if [ -z $decnum ] ; then										#check if decision error occured
+	printf " Error occured. No decision in service to post to could be made.\n"
+	cat ~/.config/picso/rrinfo
+	printf "max = $max\n"
+	exit 1
+elif [ $dryrun -lt 1 ] ; then								#else upload the file via function then update the rrinfo file
+	service$decnum
+	let "newuse=$seruse + 1"
+	sed -i "s/${sernam[$decnum]}\;$seruse/${sernam[$decnum]}\;$newuse/g" ~/.config/picso/rrinfo
+fi
+
+
+rm ~/.config/picso/upload_file									#cleanup the created file
+exit 0								
