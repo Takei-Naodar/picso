@@ -53,7 +53,7 @@ fi
 sernum=0
 while [ $sernum -lt ${#sernam[@]} ] ; do								#check if rrinfo is populated with all services, else populate it
 	if [ "$(cat ~/.config/picso/rrinfo | grep -c "${sernam[$sernum]}" )" != "1" ] ; then
-		if [ $( wc -c '~/.config/picso/rrinfo' ) -lt 5] ; then
+		if [ "$(cat ~/.config/picso/rrinfo | grep -c ";" )" -lt 1 ] ; then
 			echo "${sernam[$sernum]};0" >> ~/.config/picso/rrinfo
 		else
 			lonum=$( tail -n1 ~/.config/picso/rrinfo | cut -d";" -f2 )
@@ -116,6 +116,7 @@ if [ -z $decnum ] ; then										#check if decision error occured
 	printf " Error occured. No decision in service to post to could be made.\n"
 	cat ~/.config/picso/rrinfo
 	printf "max = $max\n"
+	rm ~/.config/picso/upload_file
 	exit 1
 elif [ $dryrun -lt 1 ] ; then								#else upload the file via function then update the rrinfo file
 	service$decnum
