@@ -28,8 +28,8 @@ curl -F'file=@/tmp/upload_file' https://0x0.st
 return
 }
 function service4 {
-key=$(curl -XPOST -#fT '/tmp/upload_file' https://hastebin.com/documents | cut -d'"' -f4)
-printf "https://hastebin.com/$key"
+key=$(curl -XPOST -s '/tmp/upload_file' https://hastebin.com/documents | cut -d'"' -f4)
+printf "https://hastebin.com/$key\n"
 return
 }
 
