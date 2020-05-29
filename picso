@@ -6,22 +6,17 @@ sernam[1]="paste.c-net.org"
 sernam[2]="ix.io"
 sernam[3]="0x0.st"
 sernam[4]="hastebin.com"
-function service0 {	
-									#functions to call with the respective commands necessary	
+function service0 {			#functions to call with the respective commands necessary
 cat /tmp/upload_file | curl -F 'sprunge=<-' http://sprunge.us
 return
-
 }
 function service1 {
-
 cat /tmp/upload_file | curl --upload-file - 'https://paste.c-net.org/'
 return
 }
 function service2 {
-
 cat /tmp/upload_file | curl -F 'f:1=<-' ix.io
 return
-
 }
 function service3 {
 curl -F'file=@/tmp/upload_file' https://0x0.st
@@ -32,7 +27,6 @@ key=$(curl -XPOST -s '/tmp/upload_file' https://hastebin.com/documents | cut -d'
 printf "https://hastebin.com/$key\n"
 return
 }
-
 function help_function {
 printf "This is the publish info for community support online script.\nIt's intended use is to ease the use of different online pastebins\nfor usage to get support from the communities.\n"
 printf "		\-h		display this help screen\n		\-d		perform a run without uploading files\nV1.0\n"
@@ -58,13 +52,13 @@ done
 
 
 param=1
-while [ $# -ge $param ] ; do				#manage parameters
+while [ $# -ge $param ] ; do		#manage parameters
 	case $1 in
-		-h ) 								#show help
+		-h ) 						#show help
 		help_function
 		exit 0
 		;;
-		-d )								# stop it from uploading, mainly for testing
+		-d )						# stop it from uploading, mainly for testing
 		dryrun=1
 		;;
 		* ) 
@@ -77,31 +71,27 @@ done
 
 
 
-cat /proc/self/fd/0  > /tmp/upload_file									#funnel pipe into file
-if [ ! $(file /tmp/upload_file | grep -c -i text) -ge 1 ] ; then			#so we can test for text
+cat /proc/self/fd/0  > /tmp/upload_file								#funnel pipe into file
+if [ ! $(file /tmp/upload_file | grep -c -i text) -ge 1 ] ; then	#so we can test for text
 	printf "Piped in information does not appear to be text.\n"
 	Printf "$(file /tmp/upload_file | grep -c -i text)"
-	rm /tmp/upload_file													#if no text error, cleanup then exit
+	rm /tmp/upload_file						#if no text error, cleanup then exit
 	exit 1
 fi
 
 
 
-decmade=0
-while [ $decmade -eq 0 ] ; do									#decide which service to use via rr style
-	decnum=
-	sernum=0
-	max=1000000
-	while [ $sernum -lt ${#sernam[@]} ] ; do
-		seruse=$(cat ~/.config/picso/rrinfo | grep "${sernam[$sernum]}" | cut -d";" -f2 )
-		if [ $seruse -lt $max ] ; then
-			max=$seruse
-			decnum=$sernum
-		fi
-		let "sernum+=1"
-	done
-	decmade=1
-done				
+decnum=						#decide which service to use via rr style
+sernum=0
+max=1000000
+while [ $sernum -lt ${#sernam[@]} ] ; do
+	seruse=$(cat ~/.config/picso/rrinfo | grep "${sernam[$sernum]}" | cut -d";" -f2 )
+	if [ $seruse -lt $max ] ; then
+		max=$seruse
+		decnum=$sernum
+	fi
+	let "sernum+=1"
+done		
 
 
 
