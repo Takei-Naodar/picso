@@ -73,8 +73,7 @@ done
 
 cat /proc/self/fd/0  > /tmp/upload_file								#funnel pipe into file
 if [ ! $(file /tmp/upload_file | grep -c -i text) -ge 1 ] ; then	#so we can test for text
-	printf "Piped in information does not appear to be text.\n"
-	printf "$(file /tmp/upload_file)\n"
+	printf "Piped in information does not appear to be text.\n%s\n" "$(file /tmp/upload_file)"
 	rm /tmp/upload_file						#if no text error, cleanup then exit
 	exit 1
 fi
@@ -96,9 +95,7 @@ done
 
 
 if [ -z $decnum ] ; then				#check if decision error occured
-	printf " Error occured. No decision in service to post to could be made.\n"
-	cat ~/.config/picso/rrinfo
-	printf "max = %s\n" "$max"
+	printf " Error occured. No decision in service to post to could be made.\n%s\nmax = %s\n" "$(cat ~/.config/picso/rrinfo)" "$max"
 	rm /tmp/upload_file
 	exit 1
 elif [ $dryrun -lt 1 ] ; then			#else upload the file via function then update the rrinfo file
