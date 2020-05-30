@@ -74,7 +74,7 @@ done
 cat /proc/self/fd/0  > /tmp/upload_file								#funnel pipe into file
 if [ ! $(file /tmp/upload_file | grep -c -i text) -ge 1 ] ; then	#so we can test for text
 	printf "Piped in information does not appear to be text.\n"
-	Printf "$(file /tmp/upload_file | grep -c -i text)"
+	printf "$(file /tmp/upload_file)\n"
 	rm /tmp/upload_file						#if no text error, cleanup then exit
 	exit 1
 fi
